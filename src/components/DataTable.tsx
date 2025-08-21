@@ -3,9 +3,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, Download, Edit2, Check, X } from "lucide-react";
+import { Search, Filter, Download, Edit2, Check, X, Save } from "lucide-react";
 import GeometricPattern from "./GeometricPattern";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface DataItem {
   id: number;
@@ -19,6 +20,7 @@ interface DataItem {
 }
 
 const DataTable = () => {
+  const { toast } = useToast();
   const [data, setData] = useState<DataItem[]>([
     {
       id: 1,
@@ -75,6 +77,8 @@ const DataTable = () => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [tempValue, setTempValue] = useState<string>("");
+  const [changedRows, setChangedRows] = useState<Set<number>>(new Set());
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
 
   const getStatusVariant = (status: string) => {
     switch (status) {
@@ -102,9 +106,48 @@ const DataTable = () => {
       }
       return item;
     }));
+    
+    // Mark this row as changed
+    setChangedRows(prev => new Set([...prev, id]));
+    setHasUnsavedChanges(true);
+    
     setEditingId(null);
     setEditingField(null);
     setTempValue("");
+
+    toast({
+      title: "Campo alterado",
+      description: "Clique em 'Salvar alterações' para confirmar.",
+    });
+  };
+
+  const handleSaveRow = (id: number) => {
+    // Simulate saving individual row
+    setChangedRows(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(id);
+      return newSet;
+    });
+    
+    if (changedRows.size === 1 && changedRows.has(id)) {
+      setHasUnsavedChanges(false);
+    }
+
+    toast({
+      title: "Linha salva",
+      description: "Alterações da linha foram salvas com sucesso.",
+    });
+  };
+
+  const handleSaveAll = () => {
+    // Simulate saving all changes
+    setChangedRows(new Set());
+    setHasUnsavedChanges(false);
+
+    toast({
+      title: "Alterações salvas",
+      description: "Todas as alterações foram salvas com sucesso.",
+    });
   };
 
   const handleCancel = () => {
@@ -290,11 +333,26 @@ const DataTable = () => {
               {data.map((item, index) => (
                 <tr 
                   key={item.id} 
-                  className="border-t border-border hover:bg-muted/30 transition-colors animate-slide-up"
+                  className={`border-t border-border hover:bg-muted/30 transition-colors animate-slide-up ${
+                    changedRows.has(item.id) ? 'bg-blue-50 dark:bg-blue-950/20' : ''
+                  }`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <td className="p-4">
-                    <div className="font-medium text-foreground">{item.interface}</div>
+                    <div className="font-medium text-foreground flex items-center gap-2">
+                      {item.interface}
+                      {changedRows.has(item.id) && (
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="h-6 px-2 text-xs bg-blue-500 text-white border-blue-500 hover:bg-blue-600"
+                          onClick={() => handleSaveRow(item.id)}
+                        >
+                          <Save className="h-3 w-3 mr-1" />
+                          Salvar
+                        </Button>
+                      )}
+                    </div>
                   </td>
                   <td className="p-4 text-muted-foreground">
                     {renderEditableField(item, 'cidade', item.cidade)}
@@ -344,6 +402,19 @@ const DataTable = () => {
           </table>
         </div>
       </Card>
+
+      {/* Save Button */}
+      {hasUnsavedChanges && (
+        <div className="flex justify-center">
+          <Button 
+            onClick={handleSaveAll}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-2 shadow-lg"
+          >
+            <Save className="h-4 w-4 mr-2" />
+            Salvar Alterações ({changedRows.size} linha{changedRows.size !== 1 ? 's' : ''})
+          </Button>
+        </div>
+      )}
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
