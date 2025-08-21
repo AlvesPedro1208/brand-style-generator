@@ -17,6 +17,7 @@ interface DataItem {
   disponibilidade: string;
   status: string;
   qtdAtivos: number;
+  qtdPortas: number;
 }
 
 const DataTable = () => {
@@ -27,50 +28,55 @@ const DataTable = () => {
       interface: "API Gateway",
       cidade: "São Paulo",
       bairro: "Vila Olímpia",
-      tecnologia: "Node.js",
+      tecnologia: "FTTX",
       disponibilidade: "99.9%",
       status: "ativo",
-      qtdAtivos: 15
+      qtdAtivos: 15,
+      qtdPortas: 8
     },
     {
       id: 2,
       interface: "Web Portal",
       cidade: "Rio de Janeiro",
       bairro: "Copacabana",
-      tecnologia: "React",
+      tecnologia: "FTTH",
       disponibilidade: "99.7%",
       status: "ativo",
-      qtdAtivos: 8
+      qtdAtivos: 8,
+      qtdPortas: 4
     },
     {
       id: 3,
       interface: "Mobile App",
       cidade: "Belo Horizonte",
       bairro: "Savassi",
-      tecnologia: "React Native",
+      tecnologia: "Rádio",
       disponibilidade: "99.5%",
       status: "manutenção",
-      qtdAtivos: 12
+      qtdAtivos: 12,
+      qtdPortas: 6
     },
     {
       id: 4,
       interface: "Database",
       cidade: "Brasília",
       bairro: "Asa Sul",
-      tecnologia: "PostgreSQL",
+      tecnologia: "FTTX",
       disponibilidade: "99.8%",
       status: "ativo",
-      qtdAtivos: 3
+      qtdAtivos: 3,
+      qtdPortas: 2
     },
     {
       id: 5,
       interface: "Analytics",
       cidade: "Salvador",
       bairro: "Barra",
-      tecnologia: "Python",
+      tecnologia: "FTTH",
       disponibilidade: "99.6%",
       status: "ativo",
-      qtdAtivos: 6
+      qtdAtivos: 6,
+      qtdPortas: 3
     }
   ]);
 
@@ -101,7 +107,7 @@ const DataTable = () => {
     setData(prev => prev.map(item => {
       if (item.id === id) {
         // Handle numeric fields properly
-        const newValue = field === 'qtdAtivos' ? parseInt(tempValue) || 0 : tempValue;
+        const newValue = field === 'qtdPortas' ? parseInt(tempValue) || 0 : tempValue;
         return { ...item, [field]: newValue };
       }
       return item;
@@ -159,6 +165,15 @@ const DataTable = () => {
   const renderEditableField = (item: DataItem, field: string, displayValue: string | number) => {
     const isEditing = editingId === item.id && editingField === field;
     
+    // Se for qtdAtivos, renderiza como somente leitura
+    if (field === 'qtdAtivos') {
+      return (
+        <div className="flex items-center gap-2 p-1 rounded">
+          <span className="text-foreground">{displayValue}</span>
+        </div>
+      );
+    }
+    
     if (isEditing) {
       if (field === 'status') {
         return (
@@ -189,13 +204,9 @@ const DataTable = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Node.js">Node.js</SelectItem>
-                <SelectItem value="React">React</SelectItem>
-                <SelectItem value="React Native">React Native</SelectItem>
-                <SelectItem value="PostgreSQL">PostgreSQL</SelectItem>
-                <SelectItem value="Python">Python</SelectItem>
-                <SelectItem value="Java">Java</SelectItem>
-                <SelectItem value="MongoDB">MongoDB</SelectItem>
+                <SelectItem value="FTTX">FTTX</SelectItem>
+                <SelectItem value="FTTH">FTTH</SelectItem>
+                <SelectItem value="Rádio">Rádio</SelectItem>
               </SelectContent>
             </Select>
             <Button size="sm" variant="ghost" onClick={() => handleSave(item.id, field)}>
@@ -213,7 +224,7 @@ const DataTable = () => {
               value={tempValue} 
               onChange={(e) => setTempValue(e.target.value)}
               className="w-32 h-8"
-              type={field === 'qtdAtivos' ? 'number' : 'text'}
+              type={field === 'qtdPortas' ? 'number' : 'text'}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleSave(item.id, field);
                 if (e.key === 'Escape') handleCancel();
@@ -278,18 +289,16 @@ const DataTable = () => {
                 <SelectItem value="salvador">Salvador</SelectItem>
               </SelectContent>
             </Select>
-            <Select>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Tecnologia" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="nodejs">Node.js</SelectItem>
-                <SelectItem value="react">React</SelectItem>
-                <SelectItem value="react-native">React Native</SelectItem>
-                <SelectItem value="postgresql">PostgreSQL</SelectItem>
-                <SelectItem value="python">Python</SelectItem>
-              </SelectContent>
-            </Select>
+                         <Select>
+               <SelectTrigger className="w-full md:w-48">
+                 <SelectValue placeholder="Tecnologia" />
+               </SelectTrigger>
+               <SelectContent>
+                 <SelectItem value="fttx">FTTX</SelectItem>
+                 <SelectItem value="ftth">FTTH</SelectItem>
+                 <SelectItem value="radio">Rádio</SelectItem>
+               </SelectContent>
+             </Select>
             <Select>
               <SelectTrigger className="w-full md:w-48">
                 <SelectValue placeholder="Disponibilidade" />
@@ -318,17 +327,21 @@ const DataTable = () => {
       <Card className="shadow-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-muted/50">
-              <tr>
-                <th className="text-left p-4 font-semibold text-foreground">Interface</th>
-                <th className="text-left p-4 font-semibold text-foreground">Cidade</th>
-                <th className="text-left p-4 font-semibold text-foreground">Bairro</th>
-                <th className="text-left p-4 font-semibold text-foreground">Tecnologia</th>
-                <th className="text-left p-4 font-semibold text-foreground">Disponibilidade</th>
-                <th className="text-left p-4 font-semibold text-foreground">Qtd de Ativos</th>
-                <th className="text-left p-4 font-semibold text-foreground">Status</th>
-              </tr>
-            </thead>
+                         <thead className="bg-muted/50">
+               <tr>
+                 <th className="text-left p-4 font-semibold text-foreground">Interface</th>
+                 <th className="text-left p-4 font-semibold text-foreground">Cidade</th>
+                 <th className="text-left p-4 font-semibold text-foreground">Bairro</th>
+                 <th className="text-left p-4 font-semibold text-foreground">Tecnologia</th>
+                 <th className="text-left p-4 font-semibold text-foreground">Ocupação</th>
+                 <th className="text-left p-4 font-semibold text-foreground">Qtd de Ativos</th>
+                 <th className="text-left p-4 font-semibold text-foreground">Qtd de Portas</th>
+                 <th className="text-left p-4 font-semibold text-foreground">Status</th>
+                 {hasUnsavedChanges && (
+                   <th className="text-left p-4 font-semibold text-foreground">Ações</th>
+                 )}
+               </tr>
+             </thead>
             <tbody>
               {data.map((item, index) => (
                 <tr 
@@ -338,22 +351,11 @@ const DataTable = () => {
                   }`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <td className="p-4">
-                    <div className="font-medium text-foreground flex items-center gap-2">
-                      {item.interface}
-                      {changedRows.has(item.id) && (
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="h-6 px-2 text-xs bg-blue-500 text-white border-blue-500 hover:bg-blue-600"
-                          onClick={() => handleSaveRow(item.id)}
-                        >
-                          <Save className="h-3 w-3 mr-1" />
-                          Salvar
-                        </Button>
-                      )}
-                    </div>
-                  </td>
+                                     <td className="p-4">
+                     <div className="font-medium text-foreground">
+                       {item.interface}
+                     </div>
+                   </td>
                   <td className="p-4 text-muted-foreground">
                     {renderEditableField(item, 'cidade', item.cidade)}
                   </td>
@@ -385,6 +387,11 @@ const DataTable = () => {
                     </div>
                   </td>
                   <td className="p-4">
+                    <div className="text-sm font-medium text-foreground">
+                      {renderEditableField(item, 'qtdPortas', item.qtdPortas)}
+                    </div>
+                  </td>
+                  <td className="p-4">
                     {editingId === item.id && editingField === 'status' ? (
                       renderEditableField(item, 'status', item.status)
                     ) : (
@@ -394,11 +401,26 @@ const DataTable = () => {
                           <Edit2 className="h-3 w-3 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </Badge>
                       </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+                                         )}
+                   </td>
+                   {hasUnsavedChanges && (
+                     <td className="p-4">
+                       {changedRows.has(item.id) && (
+                         <Button 
+                           size="sm" 
+                           variant="outline" 
+                           className="h-6 px-2 text-xs bg-blue-500 text-white border-blue-500 hover:bg-blue-600"
+                           onClick={() => handleSaveRow(item.id)}
+                         >
+                           <Save className="h-3 w-3 mr-1" />
+                           Salvar
+                         </Button>
+                       )}
+                     </td>
+                   )}
+                 </tr>
+               ))}
+             </tbody>
           </table>
         </div>
       </Card>
@@ -445,7 +467,7 @@ const DataTable = () => {
         <Card className="p-6 shadow-card bg-gradient-to-br from-pattern-green/5 to-pattern-green/10 border-pattern-green/20">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Sistemas Ativos</p>
+              <p className="text-sm text-muted-foreground">Interfaces Ativas</p>
               <p className="text-2xl font-bold text-pattern-green">{data.filter(item => item.status === "ativo").length}</p>
             </div>
             <div className="w-12 h-12 bg-pattern-green/10 rounded-lg flex items-center justify-center">
