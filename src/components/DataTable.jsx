@@ -3,11 +3,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, Download } from "lucide-react";
+import { Search, Filter, Download, Edit2, Check, X } from "lucide-react";
 import GeometricPattern from "./GeometricPattern";
+import { useState } from "react";
 
 const DataTable = () => {
-  const mockData = [
+  const [data, setData] = useState([
     {
       id: 1,
       interface: "API Gateway",
@@ -15,7 +16,8 @@ const DataTable = () => {
       bairro: "Vila Olímpia",
       tecnologia: "Node.js",
       disponibilidade: "99.9%",
-      status: "ativo"
+      status: "ativo",
+      qtdAtivos: 15
     },
     {
       id: 2,
@@ -24,7 +26,8 @@ const DataTable = () => {
       bairro: "Copacabana",
       tecnologia: "React",
       disponibilidade: "99.7%",
-      status: "ativo"
+      status: "ativo",
+      qtdAtivos: 8
     },
     {
       id: 3,
@@ -33,7 +36,8 @@ const DataTable = () => {
       bairro: "Savassi",
       tecnologia: "React Native",
       disponibilidade: "99.5%",
-      status: "manutenção"
+      status: "manutenção",
+      qtdAtivos: 12
     },
     {
       id: 4,
@@ -42,7 +46,8 @@ const DataTable = () => {
       bairro: "Asa Sul",
       tecnologia: "PostgreSQL",
       disponibilidade: "99.8%",
-      status: "ativo"
+      status: "ativo",
+      qtdAtivos: 3
     },
     {
       id: 5,
@@ -51,9 +56,14 @@ const DataTable = () => {
       bairro: "Barra",
       tecnologia: "Python",
       disponibilidade: "99.6%",
-      status: "ativo"
+      status: "ativo",
+      qtdAtivos: 6
     }
-  ];
+  ]);
+
+  const [editingId, setEditingId] = useState(null);
+  const [editingField, setEditingField] = useState(null);
+  const [tempValue, setTempValue] = useState("");
 
   const getStatusVariant = (status) => {
     switch (status) {
@@ -64,6 +74,111 @@ const DataTable = () => {
       default:
         return "outline";
     }
+  };
+
+  const handleEdit = (id, field, currentValue) => {
+    setEditingId(id);
+    setEditingField(field);
+    setTempValue(currentValue);
+  };
+
+  const handleSave = (id, field) => {
+    setData(prev => prev.map(item => 
+      item.id === id ? { ...item, [field]: tempValue } : item
+    ));
+    setEditingId(null);
+    setEditingField(null);
+    setTempValue("");
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setEditingField(null);
+    setTempValue("");
+  };
+
+  const renderEditableField = (item, field, displayValue) => {
+    const isEditing = editingId === item.id && editingField === field;
+    
+    if (isEditing) {
+      if (field === 'status') {
+        return (
+          <div className="flex items-center gap-2">
+            <Select value={tempValue} onValueChange={setTempValue}>
+              <SelectTrigger className="w-32 h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ativo">ativo</SelectItem>
+                <SelectItem value="manutenção">manutenção</SelectItem>
+                <SelectItem value="inativo">inativo</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button size="sm" variant="ghost" onClick={() => handleSave(item.id, field)}>
+              <Check className="h-3 w-3" />
+            </Button>
+            <Button size="sm" variant="ghost" onClick={handleCancel}>
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+        );
+      } else if (field === 'tecnologia') {
+        return (
+          <div className="flex items-center gap-2">
+            <Select value={tempValue} onValueChange={setTempValue}>
+              <SelectTrigger className="w-32 h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Node.js">Node.js</SelectItem>
+                <SelectItem value="React">React</SelectItem>
+                <SelectItem value="React Native">React Native</SelectItem>
+                <SelectItem value="PostgreSQL">PostgreSQL</SelectItem>
+                <SelectItem value="Python">Python</SelectItem>
+                <SelectItem value="Java">Java</SelectItem>
+                <SelectItem value="MongoDB">MongoDB</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button size="sm" variant="ghost" onClick={() => handleSave(item.id, field)}>
+              <Check className="h-3 w-3" />
+            </Button>
+            <Button size="sm" variant="ghost" onClick={handleCancel}>
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+        );
+      } else {
+        return (
+          <div className="flex items-center gap-2">
+            <Input 
+              value={tempValue} 
+              onChange={(e) => setTempValue(e.target.value)}
+              className="w-32 h-8"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSave(item.id, field);
+                if (e.key === 'Escape') handleCancel();
+              }}
+            />
+            <Button size="sm" variant="ghost" onClick={() => handleSave(item.id, field)}>
+              <Check className="h-3 w-3" />
+            </Button>
+            <Button size="sm" variant="ghost" onClick={handleCancel}>
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+        );
+      }
+    }
+
+    return (
+      <div 
+        className="flex items-center gap-2 group cursor-pointer hover:bg-muted/50 p-1 rounded"
+        onClick={() => handleEdit(item.id, field, item[field])}
+      >
+        <span>{displayValue}</span>
+        <Edit2 className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+      </div>
+    );
   };
 
   return (
@@ -150,11 +265,12 @@ const DataTable = () => {
                 <th className="text-left p-4 font-semibold text-foreground">Bairro</th>
                 <th className="text-left p-4 font-semibold text-foreground">Tecnologia</th>
                 <th className="text-left p-4 font-semibold text-foreground">Disponibilidade</th>
+                <th className="text-left p-4 font-semibold text-foreground">Qtd de Ativos</th>
                 <th className="text-left p-4 font-semibold text-foreground">Status</th>
               </tr>
             </thead>
             <tbody>
-              {mockData.map((item, index) => (
+              {data.map((item, index) => (
                 <tr 
                   key={item.id} 
                   className="border-t border-border hover:bg-muted/30 transition-colors animate-slide-up"
@@ -163,22 +279,47 @@ const DataTable = () => {
                   <td className="p-4">
                     <div className="font-medium text-foreground">{item.interface}</div>
                   </td>
-                  <td className="p-4 text-muted-foreground">{item.cidade}</td>
-                  <td className="p-4 text-muted-foreground">{item.bairro}</td>
+                  <td className="p-4 text-muted-foreground">
+                    {renderEditableField(item, 'cidade', item.cidade)}
+                  </td>
+                  <td className="p-4 text-muted-foreground">
+                    {renderEditableField(item, 'bairro', item.bairro)}
+                  </td>
                   <td className="p-4">
-                    <Badge variant="outline" className="border-primary text-primary">
-                      {item.tecnologia}
-                    </Badge>
+                    {editingId === item.id && editingField === 'tecnologia' ? (
+                      renderEditableField(item, 'tecnologia', item.tecnologia)
+                    ) : (
+                      <div onClick={() => handleEdit(item.id, 'tecnologia', item.tecnologia)} className="cursor-pointer group">
+                        <Badge variant="outline" className="border-primary text-primary group-hover:bg-muted/50">
+                          {item.tecnologia}
+                          <Edit2 className="h-3 w-3 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </Badge>
+                      </div>
+                    )}
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
-                      <div className="text-sm font-medium text-success">{item.disponibilidade}</div>
+                      <div className="text-sm font-medium text-success">
+                        {renderEditableField(item, 'disponibilidade', item.disponibilidade)}
+                      </div>
                     </div>
                   </td>
                   <td className="p-4">
-                    <Badge variant={getStatusVariant(item.status)}>
-                      {item.status}
-                    </Badge>
+                    <div className="text-sm font-medium text-foreground">
+                      {renderEditableField(item, 'qtdAtivos', item.qtdAtivos)}
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    {editingId === item.id && editingField === 'status' ? (
+                      renderEditableField(item, 'status', item.status)
+                    ) : (
+                      <div onClick={() => handleEdit(item.id, 'status', item.status)} className="cursor-pointer group">
+                        <Badge variant={getStatusVariant(item.status)} className="group-hover:bg-muted/50">
+                          {item.status}
+                          <Edit2 className="h-3 w-3 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </Badge>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -193,7 +334,7 @@ const DataTable = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Total de Interfaces</p>
-              <p className="text-2xl font-bold text-pattern-blue">{mockData.length}</p>
+              <p className="text-2xl font-bold text-pattern-blue">{data.length}</p>
             </div>
             <div className="w-12 h-12 bg-pattern-blue/10 rounded-lg flex items-center justify-center">
               <div className="w-6 h-6 bg-pattern-blue rounded-sm"></div>
@@ -217,7 +358,7 @@ const DataTable = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Sistemas Ativos</p>
-              <p className="text-2xl font-bold text-pattern-green">{mockData.filter(item => item.status === "ativo").length}</p>
+              <p className="text-2xl font-bold text-pattern-green">{data.filter(item => item.status === "ativo").length}</p>
             </div>
             <div className="w-12 h-12 bg-pattern-green/10 rounded-lg flex items-center justify-center">
               <div className="w-6 h-6 bg-pattern-green rounded-sm"></div>
