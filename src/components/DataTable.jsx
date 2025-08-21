@@ -55,7 +55,7 @@ const DataTable = () => {
     }
   ];
 
-  const getStatusVariant = (status: string) => {
+  const getStatusVariant = (status) => {
     switch (status) {
       case "ativo":
         return "default";
