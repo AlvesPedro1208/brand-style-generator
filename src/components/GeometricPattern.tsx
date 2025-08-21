@@ -1,6 +1,11 @@
 import { cn } from "@/lib/utils";
 
-const GeometricPattern = ({ className, variant = "background" }) => {
+interface GeometricPatternProps {
+  className?: string;
+  variant?: "background" | "decorative";
+}
+
+const GeometricPattern = ({ className, variant = "background" }: GeometricPatternProps) => {
   const patterns = [
     { color: "pattern-blue", rotation: "rotate-45", delay: "0s" },
     { color: "pattern-orange", rotation: "rotate-12", delay: "2s" },

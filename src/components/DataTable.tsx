@@ -7,8 +7,19 @@ import { Search, Filter, Download, Edit2, Check, X } from "lucide-react";
 import GeometricPattern from "./GeometricPattern";
 import { useState } from "react";
 
+interface DataItem {
+  id: number;
+  interface: string;
+  cidade: string;
+  bairro: string;
+  tecnologia: string;
+  disponibilidade: string;
+  status: string;
+  qtdAtivos: number;
+}
+
 const DataTable = () => {
-  const [data, setData] = useState([
+  const [data, setData] = useState<DataItem[]>([
     {
       id: 1,
       interface: "API Gateway",
@@ -61,11 +72,11 @@ const DataTable = () => {
     }
   ]);
 
-  const [editingId, setEditingId] = useState(null);
-  const [editingField, setEditingField] = useState(null);
-  const [tempValue, setTempValue] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [tempValue, setTempValue] = useState<string>("");
 
-  const getStatusVariant = (status) => {
+  const getStatusVariant = (status: string) => {
     switch (status) {
       case "ativo":
         return "default";
@@ -76,16 +87,21 @@ const DataTable = () => {
     }
   };
 
-  const handleEdit = (id, field, currentValue) => {
+  const handleEdit = (id: number, field: string, currentValue: string | number) => {
     setEditingId(id);
     setEditingField(field);
-    setTempValue(currentValue);
+    setTempValue(String(currentValue));
   };
 
-  const handleSave = (id, field) => {
-    setData(prev => prev.map(item => 
-      item.id === id ? { ...item, [field]: tempValue } : item
-    ));
+  const handleSave = (id: number, field: string) => {
+    setData(prev => prev.map(item => {
+      if (item.id === id) {
+        // Handle numeric fields properly
+        const newValue = field === 'qtdAtivos' ? parseInt(tempValue) || 0 : tempValue;
+        return { ...item, [field]: newValue };
+      }
+      return item;
+    }));
     setEditingId(null);
     setEditingField(null);
     setTempValue("");
@@ -97,7 +113,7 @@ const DataTable = () => {
     setTempValue("");
   };
 
-  const renderEditableField = (item, field, displayValue) => {
+  const renderEditableField = (item: DataItem, field: string, displayValue: string | number) => {
     const isEditing = editingId === item.id && editingField === field;
     
     if (isEditing) {
@@ -154,6 +170,7 @@ const DataTable = () => {
               value={tempValue} 
               onChange={(e) => setTempValue(e.target.value)}
               className="w-32 h-8"
+              type={field === 'qtdAtivos' ? 'number' : 'text'}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleSave(item.id, field);
                 if (e.key === 'Escape') handleCancel();
@@ -189,7 +206,7 @@ const DataTable = () => {
           <h1 className="text-3xl font-bold text-foreground">Sistema de Monitoramento</h1>
           <p className="text-muted-foreground">Gerencie interfaces e tecnologias da empresa</p>
         </div>
-        <GeometricPattern variant="decorative" />
+        <GeometricPattern className="" variant="decorative" />
       </div>
 
       {/* Filters */}
